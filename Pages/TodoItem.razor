@@ -1,0 +1,11 @@
+﻿@using TodoApp.DTO
+<li>
+    <input type="checkbox" @bind="Task.IsDone" />
+    <span style="@(Task.IsDone ? "text-decoration: line-through;" : "")">@Task.Title</span>
+    <button class="btn btn-danger btn-sm" @onclick="() => OnDelete.InvokeAsync(Task)">❌</button>
+</li>
+
+@code {
+    [Parameter] public TaskItem Task { get; set; }
+    [Parameter] public EventCallback<TaskItem> OnDelete { get; set; }
+}
