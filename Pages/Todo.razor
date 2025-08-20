@@ -11,7 +11,7 @@
 <ul>
     @foreach (var task in tasks)
     {
-        <TodoItem>task</TodoItem>
+        <TaskRow Task="task" OnDelete="RemoveTask" />
     }
 </ul>
 
