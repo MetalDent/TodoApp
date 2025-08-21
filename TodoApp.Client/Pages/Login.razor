@@ -1,0 +1,18 @@
+﻿@page "/login"
+@using TodoApp.Client.Auth
+@inject AuthService Auth
+@inject NavigationManager Nav
+
+<h3>Login</h3>
+
+<input @bind-value="email" @bind-value:event="oninput" placeholder="Email" />
+<input type="password" @bind-value="password" @bind-value:event="oninput" placeholder="Password" />
+<button class="btn btn-primary" @onclick="DoLogin">Login</button>
+
+@code {
+    string email = ""; string password = "";
+    async Task DoLogin()
+    {
+        if (await Auth.Login(email, password)) Nav.NavigateTo("/todo", true);
+    }
+}

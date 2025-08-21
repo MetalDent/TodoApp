@@ -1,4 +1,4 @@
-﻿@using TodoApp.DTO
+﻿@using TodoApp.Api.DTO
 <li>
     <input type="checkbox" @bind="Task.IsDone" />
     <span style="@(Task.IsDone ? "text-decoration: line-through;" : "")">@Task.Title</span>
@@ -6,6 +6,6 @@
 </li>
 
 @code {
-    [Parameter] public TaskItem Task { get; set; }
-    [Parameter] public EventCallback<TaskItem> OnDelete { get; set; }
+    [Parameter] public TodoItem Task { get; set; }
+    [Parameter] public EventCallback<TodoItem> OnDelete { get; set; }
 }

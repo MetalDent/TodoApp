@@ -1,0 +1,87 @@
+﻿@page "/todo"
+@attribute [Authorize]
+@inject ApiClient Api
+@inject NavigationManager Nav
+@inject AuthenticationStateProvider AuthStateProvider
+@using System.Net.Http.Json
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@using TodoApp.Api.DTO
+
+<h3>To-Do List</h3>
+
+<AuthorizeView>
+    <Authorized>
+        <input class="form-control d-inline-block w-50" @bind="newTask" />
+        <button class="btn btn-primary ml-2" @onclick="AddTask">Add</button>
+
+        <p>Total tasks: @tasks.Count</p>
+
+        <ul>
+            @foreach (var task in tasks)
+            {
+                <li>
+                    <input type="checkbox" @bind="task.IsDone" @bind:after="() => Save(task)" />
+                    @task.Title
+                    <button class="btn btn-sm btn-danger" @onclick="() => Delete(task.Id)">x</button>
+                </li>
+            }
+        </ul>
+    </Authorized>
+    <NotAuthorized>
+        <p>Please <a href="login">log in</a> to manage your tasks.</p>
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+    [CascadingParameter]
+    private Task<AuthenticationState> AuthStateTask { get; set; }
+    
+    private string newTask;
+    private List<TodoItem> tasks = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var state = await AuthStateTask;
+        if (state.User.Identity?.IsAuthenticated == true)
+            await Load();
+
+        AuthStateProvider.AuthenticationStateChanged += OnAuthChanged;
+    }
+
+    private async void OnAuthChanged(Task<AuthenticationState> task)
+    {
+        var state = await task;
+        if (state.User.Identity?.IsAuthenticated == true)
+            await Load();
+        else
+            tasks.Clear();
+
+        await InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+        => AuthStateProvider.AuthenticationStateChanged -= OnAuthChanged;
+
+    async Task Load()
+        => tasks = await Api.Get<List<TodoItem>>("api/todos") ?? new();
+
+    async Task AddTask()
+    {
+        if (string.IsNullOrWhiteSpace(newTask)) return;
+        var resp = await Api.Post("api/todos", new TodoItem { Title = newTask });
+        if (resp.IsSuccessStatusCode)
+        {
+            var created = await resp.Content.ReadFromJsonAsync<TodoItem>();
+            tasks.Add(created!);
+            newTask = "";
+        }
+    }
+
+    async Task Save(TodoItem t) => await Api.Put($"api/todos/{t.Id}", t);
+    async Task Delete(int id)
+    {
+        var r = await Api.Delete($"api/todos/{id}");
+        if (r.IsSuccessStatusCode) tasks.RemoveAll(x => x.Id == id);
+    }
+}

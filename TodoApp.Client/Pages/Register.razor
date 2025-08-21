@@ -1,0 +1,21 @@
+﻿@page "/register"
+@using TodoApp.Client.Auth
+@inject AuthService Auth
+@inject NavigationManager Nav
+
+<h3>Register</h3>
+
+<input @bind-value="email" @bind-value:event="oninput" placeholder="Email" />
+<input type="password" @bind-value="password" @bind-value:event="oninput" placeholder="Password" />
+<button class="btn btn-primary" @onclick="DoRegister">Register</button>
+
+@code {
+    string email = "";
+    string password = "";
+
+    async Task DoRegister()
+    {
+        if (await Auth.Register(email, password))
+            Nav.NavigateTo("/login");
+    }
+}

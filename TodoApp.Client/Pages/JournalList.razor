@@ -1,0 +1,30 @@
+﻿@page "/journals"
+@inject ApiClient Api
+@using System.Net.Http.Json
+@using TodoApp.Api.DTO
+@inject NavigationManager Navigation
+
+<h3>Journal</h3>
+<input @bind-value="q" @bind-value:event="oninput" placeholder="Search..." />
+<button class="btn btn-primary" @onclick="NewEntry">New</button>
+
+<ul>
+    @foreach (var j in entries)
+    {
+        <li>
+            <a @onclick="() => Edit(j.Id)">@j.Title</a>
+            <small> (@j.CreatedUtc.ToLocalTime())</small>
+        </li>
+    }
+</ul>
+
+@code {
+    List<JournalEntry> entries = new();
+    string q = "";
+
+    protected override async Task OnInitializedAsync() => await Load();
+
+    async Task Load() => entries = await Api.Get<List<JournalEntry>>($"api/journals?q={Uri.EscapeDataString(q ?? "")}") ?? new();
+    void NewEntry() => Edit(0);
+    void Edit(int id) => Navigation.NavigateTo($"/journals/edit/{id}");
+}

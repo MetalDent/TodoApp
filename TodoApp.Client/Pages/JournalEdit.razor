@@ -1,0 +1,33 @@
+﻿@page "/journals/edit/{Id:int}"
+@using TodoApp.Api.DTO
+@inject ApiClient Api
+@inject NavigationManager Navigation
+
+<h3>@(model.Id == 0 ? "New Entry" : "Edit Entry")</h3>
+
+<input class="form-control" @bind-value="model.Title" @bind-value:event="oninput" placeholder="Title" />
+<textarea class="form-control" rows="10" @bind-value="model.Content" @bind-value:event="oninput" placeholder="Write..."></textarea>
+
+<button class="btn btn-success" @onclick="Save">Save</button>
+<button class="btn btn-secondary" @onclick="Cancel">Cancel</button>
+
+@code {
+    [Parameter] public int Id { get; set; }
+
+    JournalEntry model = new();
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (Id > 0)
+            model = await Api.Get<JournalEntry>($"api/journals/{Id}") ?? new();
+    }
+
+    async Task Save()
+    {
+        if (model.Id == 0) await Api.Post("api/journals", model);
+        else await Api.Put($"api/journals/{model.Id}", model);
+        Navigation.NavigateTo("/journals", true);
+    }
+
+    void Cancel() => Navigation.NavigateTo("/journals");
+}
